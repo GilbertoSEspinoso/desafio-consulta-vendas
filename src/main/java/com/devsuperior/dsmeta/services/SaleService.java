@@ -1,8 +1,14 @@
 package com.devsuperior.dsmeta.services;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.devsuperior.dsmeta.dto.SaleMinDTO;
@@ -12,12 +18,30 @@ import com.devsuperior.dsmeta.repositories.SaleRepository;
 @Service
 public class SaleService {
 
-	@Autowired
-	private SaleRepository repository;
-	
-	public SaleMinDTO findById(Long id) {
-		Optional<Sale> result = repository.findById(id);
-		Sale entity = result.get();
-		return new SaleMinDTO(entity);
-	}
+    @Autowired
+    private SaleRepository repository;
+
+    public SaleMinDTO findById(Long id) {
+        Optional<Sale> result = repository.findById(id);
+        Sale entity = result.get();
+        return new SaleMinDTO(entity);
+    }
+
+    public Page<SaleMinDTO> getReport(String minDate, String maxDate, String name, Pageable pageable) {
+        LocalDate searcMinDate;
+        LocalDate searchMaxDate = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+
+        if (maxDate != null && !maxDate.isEmpty())
+            searchMaxDate = LocalDate.parse(maxDate);
+
+        if (minDate != null && !minDate.isEmpty()) {
+            searcMinDate = LocalDate.parse(minDate);
+        } else {
+            searcMinDate = searchMaxDate.minusYears(2L);
+        }
+
+        if (name == null)
+            name = "";
+        return repository.getReport(searcMinDate, searchMaxDate, name, pageable);
+    }
 }
