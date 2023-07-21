@@ -4,8 +4,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 import java.util.Optional;
 
+import com.devsuperior.dsmeta.dto.SellerMinDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,20 +30,38 @@ public class SaleService {
     }
 
     public Page<SaleMinDTO> getReport(String minDate, String maxDate, String name, Pageable pageable) {
-        LocalDate searcMinDate;
+        LocalDate searchMinDate;
         LocalDate searchMaxDate = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
 
         if (maxDate != null && !maxDate.isEmpty())
             searchMaxDate = LocalDate.parse(maxDate);
 
         if (minDate != null && !minDate.isEmpty()) {
-            searcMinDate = LocalDate.parse(minDate);
+            searchMinDate = LocalDate.parse(minDate);
         } else {
-            searcMinDate = searchMaxDate.minusYears(2L);
+            searchMinDate = searchMaxDate.minusYears(2L);
         }
 
         if (name == null)
             name = "";
-        return repository.getReport(searcMinDate, searchMaxDate, name, pageable);
+        return repository.getReport(searchMinDate, searchMaxDate, name, pageable);
+    }
+
+    public List<SellerMinDTO> getSummary (String minDate, String maxDate, String name){
+        LocalDate searchMinDate, searchMaxDate;
+
+        if (maxDate == null) {
+            searchMaxDate = LocalDate.ofInstant(Instant.now(), ZoneId.systemDefault());
+        } else {
+            searchMaxDate = LocalDate.parse(maxDate);
+        }
+
+        if (minDate == null) {
+            searchMinDate = searchMaxDate.minusYears(2L);
+        } else {
+            searchMinDate = LocalDate.parse(minDate);
+        }
+
+        return repository.getSummary(searchMinDate, searchMaxDate, name);
     }
 }
